@@ -8,28 +8,54 @@
 
 import Foundation
 
+// Initial state
+// Will add numbers to this array
 var r = [3, 7]
-var e1 = 0
-var e2 = 1
-var max = 047801
-var match = "047801"
-
+// Will also keep string to match last X digits for easy matching to string
 var toMatch = "37"
 
-func nextStep() -> Bool {
+// First elf index
+var e1 = 0
+// Second elf index
+var e2 = 1
+
+// Part 1 - generate receipes until we have x=input + 10 items
+var max = 047801 + 10
+// Part 2 - generate receipes until we have match string at the end
+var match = "047801"
+
+func nextStep(part: Int) -> Bool {
     var sum = r[e1] + r[e2]
     if sum > 9 {
         r.append(1)
-        if appendAndMatch(i: 1) == true {
-            return true
-        }
         sum = sum - 10
+
+        // Exit conditions
+        if part == 1 {
+            if r.count == max {
+                return true
+            }
+        }
+        else if part == 2 {
+            if appendAndMatch(i: 1) {
+                return true
+            }
+        }
     }
     r.append(sum)
-    if appendAndMatch(i: sum) == true {
-        return true
-    }
     
+    // Exit conditions
+    if part == 1 {
+        if r.count == max {
+            return true
+        }
+    }
+    else if part == 2 {
+        if appendAndMatch(i: sum) {
+            return true
+        }
+    }
+
     e1 = (e1 + 1 + r[e1]) % r.count
     e2 = (e2 + 1 + r[e2]) % r.count
     return false
@@ -41,36 +67,15 @@ func appendAndMatch(i: Int) -> Bool {
         toMatch.remove(at: toMatch.startIndex)
     }
     if toMatch == match {
-        print("END!!! \(toMatch) == \(match)")
+        print("Part 2 is complete. \(toMatch) == \(match)")
+        print("Total count = \(r.count). Pattern to match length is \(match.count)")
         return true
     }
-    // print(toMatch)
-    if (r.count % 1000 == 0) {
+
+    // Print progress... just in case
+    if (r.count % 1000000 == 0) {
         print(r.count)
     }
-    return false
-}
-
-func found (match: String) -> Bool {
-    if r.count < 7 {
-        return false
-    }
-
-    var out = ""
-    for i in r.count-5..<r.count {
-        out.append("\(r[i])")
-    }
-    if out == match {
-        return true
-    }
-    out = ""
-    for i in r.count-6..<r.count-1 {
-        out.append("\(r[i])")
-    }
-    if out == match {
-        return true
-    }
-
     return false
 }
 
@@ -96,11 +101,28 @@ func printLast10() {
         out.append("\(r[i])")
     }
     
-    print(out)
+    print("Part 1 is complete. Last 10 numbers: \(out)")
 }
 
-while nextStep() == false {
+func initialize() {
+    r = [3, 7]
+    toMatch = "37"
+    e1 = 0
+    e2 = 1
 }
-print(r.count)
+
+func doPart1() {
+    initialize()
+    while nextStep(part: 1) == false {}
+    printLast10()
+}
+
+func doPart2() {
+    initialize()
+    while nextStep(part: 2) == false {}
+}
+
+doPart1()
+doPart2()
 // printData()
 
