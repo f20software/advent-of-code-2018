@@ -48,6 +48,7 @@ class Command {
 }
 
 var regs = [0, 0, 0, 0, 0, 0]
+var program = [Command]()
 
 func executeOperation(line: Int, cmd: Command) {
     
@@ -83,8 +84,8 @@ func executeOperation(line: Int, cmd: Command) {
     case "eqri":
         regs[cmd.c] = regs[cmd.a] == cmd.b ? 1 : 0
     case "eqrr":
-        print("\(regs[cmd.a])")// " :\(line): \(cmd.description) \(regs) \(cmd.c == 2 ? "*) reg2 updated" : "")")
         regs[cmd.c] = regs[cmd.a] == regs[cmd.b] ? 1 : 0
+        
     default:
         print("UNKNOWN COMMAND \(cmd.op).")
         abort()
@@ -94,35 +95,78 @@ func executeOperation(line: Int, cmd: Command) {
     // print("\(line): \(cmd.description) \(regs) \(cmd.c == 2 ? "*) reg2 updated" : "")")
 }
 
-let dump = puzzle
 let ip_reg = 2
-
-var decodedCommands = [String: Command]()
-
+// Print registers after chk_reg value is changed - good way to see program execution progress
+let chk_reg = 5
+// Step counter
 var steps = 0
-while (true) {
-    let ip = regs[ip_reg]
-    if ip < 0 || ip >= dump.count {
-        print("THE END. \(regs)")
-        abort()
+
+func prepareProgram() {
+    for line in puzzle {
+        program.append(Command(line))
     }
-    
-    let line = dump[ip]
-    var cmd = decodedCommands[line]
-    if cmd == nil {
-        cmd = Command(line)
-        decodedCommands[line] = cmd
-    }
-    
-    let rchk = regs[5]
-    
-    executeOperation(line: ip, cmd: cmd!)
-    regs[ip_reg] = regs[ip_reg] + 1
-    
-//    if regs[5] != rchk {
-//        print("\(steps): \(regs)")
-//    }
-    
-    steps = steps + 1
 }
+
+func executeProgram1() {
+    var cmd = program[0]
+    
+    while (cmd.op != "eqrr") {
+        let ip = regs[ip_reg]
+        if ip < 0 || ip >= program.count {
+            return
+        }
+
+        let rchk = regs[chk_reg]
+        cmd = program[ip]
+        
+        executeOperation(line: ip, cmd: cmd)
+        regs[ip_reg] = regs[ip_reg] + 1
+        
+        if regs[chk_reg] != rchk {
+            print("\(steps): \(regs)")
+        }
+        
+        steps = steps + 1
+    }
+}
+
+func executeProgram2() {
+    var cmd = program[0]
+    var matchedNumbers: [Int: Bool] = [Int: Bool]()
+    
+    while (true) {
+        let ip = regs[ip_reg]
+        if ip < 0 || ip >= program.count {
+            return
+        }
+        
+        cmd = program[ip]
+        
+        executeOperation(line: ip, cmd: cmd)
+        regs[ip_reg] = regs[ip_reg] + 1
+        
+        if cmd.op == "eqrr" {
+            if matchedNumbers[regs[5]] != nil {
+                print("Found first duplicated number in reg5")
+                break
+            }
+            matchedNumbers[regs[5]] = true
+            print("\(matchedNumbers.count): \(regs[5])")
+        }
+        
+        steps = steps + 1
+    }
+}
+
+prepareProgram()
+
+// Part 1
+executeProgram1()
+print("\(steps): \(regs)")
+print("Putting \(regs[5]) in reg0 would make the program stop as soon as possible.")
+
+// Part 2
+executeProgram2()
+
+
 

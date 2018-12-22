@@ -159,9 +159,9 @@ var min = 1
 while min < 10000 {
     nextStep()
     matrix = next
-    // printMatrix()
+    printMatrix()
     min = min + 1
-    printCount(min)
+    // printCount(min)
 }
 
 printCount(min)
